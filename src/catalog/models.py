@@ -44,12 +44,14 @@ class MediaCatalog:
 
     def __init__(self):
         self.__data = {}
+        self.__categories = {}
+        self.__names = {}
 
     def __len__(self):
         return len(self.__data)
 
     def __iter__(self):
-        return self
+        return iter(self.__data)
 
     def __contains__(self, item_id: str):
         return item_id in self.__data
