@@ -7,7 +7,7 @@ class InvalidObjectError(CatalogError):
 class IDDuplicateError(CatalogError):
     pass
 
-class ObjectNotFound(CatalogError):
+class ObjectNotFoundError(CatalogError):
     pass
 
 class UnsupportedVersionError(CatalogError):
