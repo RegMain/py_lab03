@@ -1,4 +1,3 @@
-import datetime as dt
 from dataclasses import dataclass
 
 from catalog.errors import IDDuplicateError, InvalidObjectError, ObjectNotFoundError
@@ -76,7 +75,7 @@ class MediaCatalog:
 
     def get(self, item_id: str) -> MediaObject:
         if not isinstance(item_id, str):
-            raise ValueError(
+            raise TypeError(
                 f"ERROR: MediaCategory.get() takes only {str} type argument, not {type(item_id)}.\n"
             )
         if not self.__contains__(item_id):
@@ -87,7 +86,7 @@ class MediaCatalog:
 
     def remove(self, item_id: str) -> MediaObject:
         if not isinstance(item_id, str):
-            raise ValueError(
+            raise TypeError(
                 f"ERROR: MediaCategory.remove() takes only {str} type argument, not {type(item_id)}.\n"
             )
         if not self.__contains__(item_id):
@@ -99,7 +98,7 @@ class MediaCatalog:
 
     def find_by_category(self, category: str) -> list[str]:
         if not isinstance(category, str):
-            raise ValueError(
+            raise TypeError(
                 f"ERROR: MediaCategory.find_by_category() takes only {str} type argument, not {type(category)}.\n"
             )
         if category.title() not in self.__categories:
@@ -109,7 +108,7 @@ class MediaCatalog:
 
     def find_by_name(self, query: str) -> list[str]:
         if not isinstance(query, str):
-            raise ValueError(
+            raise TypeError(
                 f"ERROR: MediaCategory.find_by_name() takes only {str} type argument, not {type(query)}.\n"
             )
         if query.title() not in self.__categories:

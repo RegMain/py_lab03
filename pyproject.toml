@@ -1,14 +1,19 @@
 [project]
 name = "catalog"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "Catalog of Mediafiles"
 readme = "README.md"
+authors = [
+    { name = "RegMain", email = "kharkov.ivan.an@gmail.com" }
+]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "ruff>=0.17.3",
+]
 
 [project.scripts]
-py-lab03 = "py_lab03:main"
+catalog = "catalog:main"
 
 [build-system]
-requires = ["uv_build>=0.13.5,<0.14.0"]
+requires = ["uv_build>=0.13.6,<0.14.0"]
 build-backend = "uv_build"
