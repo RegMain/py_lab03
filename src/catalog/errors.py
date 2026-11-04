@@ -10,7 +10,7 @@ class IDDuplicateError(CatalogError):
 class ObjectNotFoundError(CatalogError):
     pass
 
-class UnsupportedVersionError(CatalogError):
+class IncompatibleVersionError(CatalogError):
     pass
 
 class BrokenFileError(CatalogError):

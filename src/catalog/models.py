@@ -1,17 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass, asdict
+import json
 
-from catalog.errors import IDDuplicateError, InvalidObjectError, ObjectNotFoundError
+from catalog.errors import BrokenFileError, IDDuplicateError, IncompatibleVersionError, InvalidObjectError, ObjectNotFoundError
+from catalog.constants import MEDIA_OBJECT_FIELD_TYPES, COMPATIBLE_VERSIONS, CURRENT_VERSION
 
-MEDIA_OBJECT_FIELD_TYPES = {
-    "id": str,
-    "category": str,
-    "name": str,
-    "genre": str,
-    "author": str,
-    "duration": int,
-    "size": int,
-    "year": int
-}
+class DataclassJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if is_dataclass(o):
+            return asdict(o)
+        return super().default(o)
 
 @dataclass
 class MediaObject:
@@ -24,7 +21,7 @@ class MediaObject:
     size: int # size in bytes
     year: int
 
-    def __post_init__(self):
+    def check(self) -> None:
         for attr in vars(self):
             field_type = MEDIA_OBJECT_FIELD_TYPES[attr]
             object_field_value = getattr(self, attr)
@@ -37,23 +34,26 @@ class MediaObject:
                     "ERROR: Object field \"{attr}\" should have a valid value.\n"
                 )
 
+    def __post_init__(self) -> None:
+        self.check()
+
 class MediaCatalog:
     __data: dict[str, MediaObject]
     __categories: dict[str, list[str]]
     __names: dict[str, list[str]]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__data = {}
         self.__categories = {}
         self.__names = {}
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__data)
 
     def __iter__(self):
         return iter(self.__data)
 
-    def __contains__(self, item_id: str):
+    def __contains__(self, item_id: str) -> bool:
         return item_id in self.__data
 
     def add(self, item: MediaObject) -> None:
@@ -117,3 +117,55 @@ class MediaCatalog:
             return []
         else:
             return self.__names[query.title()][:]
+
+    def dump(self, filename: str = "catalog.json") -> None:
+        try:
+            with open(filename, "w") as file:
+                json.dump({"version": CURRENT_VERSION, "data": self.__data}, file, indent=2, cls=DataclassJSONEncoder)
+        except OSError:
+            raise BrokenFileError(
+                f"File {filename} is either not exists or you have no permission to read it or it is a directory.\n"
+            )
+        except json.JSONDecodeError:
+            raise BrokenFileError(
+                f"File {filename} is either broken or has wrong format.\n"
+            )
+    def load(self, filename: str = "catalog.json") -> None:
+        try:
+            with open(filename, "r") as file:
+                try:
+                    json_data = json.load(file)
+                except json.JSONDecodeError:
+                    raise BrokenFileError(
+                        f"File {filename} is either broken or has wrong format.\n"
+                    )
+                if "version" not in json_data or "data" not in json_data or len(json_data) != 2:
+                    raise BrokenFileError(
+                        f"File {filename} is either broken or has wrong format.\n"
+                    )
+                if json_data["version"] not in COMPATIBLE_VERSIONS:
+                    raise IncompatibleVersionError(
+                        f"Version {json_data['version']} is incompatible with version {CURRENT_VERSION} of catalog.\n"
+                    )
+                json_categories = {}
+                json_names = {}
+                for id, object in json_data["data"].items():
+                    try:
+                        json_data["data"][id] = MediaObject(**object)
+                    except (InvalidObjectError, TypeError):
+                        raise BrokenFileError(
+                            f"File {filename} is broken.\n"
+                        )
+                    if object["category"] not in json_categories:
+                        json_categories[object["category"]] = []
+                    json_categories[object["category"]].append(id)
+                    if object["name"] not in json_names:
+                        json_names[object["name"]] = []
+                    json_names[object["name"]].append(id)
+                self.__data = json_data["data"]
+                self.__categories = json_categories
+                self.__names = json_names
+        except OSError:
+            raise BrokenFileError(
+                f"File {filename} is either not exists or you have no permission to read it or it is a directory.\n"
+            )
