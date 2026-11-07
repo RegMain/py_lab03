@@ -1,0 +1,55 @@
+{
+  "version": "3.0.0",
+  "data": {
+    "id1": {
+      "id": "id1",
+      "category": "Music",
+      "name": "Abc",
+      "genre": "111",
+      "author": "111",
+      "duration": 111,
+      "size": 111,
+      "year": 111
+    },
+    "id2": {
+      "id": "id2",
+      "category": "Music",
+      "name": "Abc",
+      "genre": "111",
+      "author": "111",
+      "duration": 111,
+      "size": 111,
+      "year": 111
+    },
+    "id3": {
+      "id": "id3",
+      "category": "Music",
+      "name": "5",
+      "genre": "111",
+      "author": "111",
+      "duration": 111,
+      "size": 111,
+      "year": 111
+    },
+    "id4": {
+      "id": "id4",
+      "category": "Music",
+      "name": "5",
+      "genre": "111",
+      "author": "111",
+      "duration": 111,
+      "size": 111,
+      "year": 111
+    },
+    "id5": {
+      "id": "id5",
+      "category": "Music",
+      "name": "Abc",
+      "genre": "111",
+      "author": "111",
+      "duration": 111,
+      "size": 111,
+      "year": 111
+    }
+  }
+}

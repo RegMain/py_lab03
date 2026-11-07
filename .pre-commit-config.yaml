@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-ast
+  - repo: local
+    hooks:
+    - id: pytest-check
+      name: pytest-check
+      stages: [commit]
+      types: [python]
+      entry: pytest
+      language: system
+      pass_filenames: false
+      always_run: true

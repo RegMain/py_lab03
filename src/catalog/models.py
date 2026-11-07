@@ -45,9 +45,11 @@ class MediaObject:
                 raise InvalidObjectError(
                     f'ERROR: Object field "{attr}" should have a valid value.\n'
                 )
+            if (attr != "id") and isinstance(object_field_value, str):
+                setattr(self, attr, object_field_value.title())
         if self.size < 0:
             raise InvalidObjectError(
-                'ERROR: Object size cannot be less than zero bytes.\n'
+                "ERROR: Object size cannot be less than zero bytes.\n"
             )
 
     def __post_init__(self) -> None:
@@ -67,8 +69,17 @@ class MediaCatalog:
     def __len__(self) -> int:
         return len(self.__data)
 
+    def __eq__(self, other) -> bool:
+        for attr in vars(self):
+            try:
+                if getattr(self, attr) != getattr(other, attr):
+                    return False
+            except AttributeError:
+                return False
+        return True
+
     def __iter__(self):
-        return iter(self.__data)
+        return iter(self.__data.values())
 
     def __contains__(self, item_id: str) -> bool:
         return item_id in self.__data
@@ -88,9 +99,9 @@ class MediaCatalog:
         else:
             self.__categories[item.category.title()].append(item.id)
         if item.name.title() not in self.__names:
-            self.__categories[item.name.title()] = [item.id]
+            self.__names[item.name.title()] = [item.id]
         else:
-            self.__categories[item.name.title()].append(item.id)
+            self.__names[item.name.title()].append(item.id)
 
     def get(self, item_id: str) -> MediaObject:
         if not isinstance(item_id, str):
@@ -130,7 +141,7 @@ class MediaCatalog:
             raise TypeError(
                 f"ERROR: MediaCategory.find_by_name() takes only {str} type argument, not {type(query)}.\n"
             )
-        if query.title() not in self.__categories:
+        if query.title() not in self.__names:
             return []
         else:
             return self.__names[query.title()][:]
