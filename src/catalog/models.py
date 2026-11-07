@@ -1,8 +1,19 @@
-from dataclasses import dataclass, is_dataclass, asdict
 import json
+from dataclasses import asdict, dataclass, is_dataclass
 
-from catalog.errors import BrokenFileError, IDDuplicateError, IncompatibleVersionError, InvalidObjectError, ObjectNotFoundError
-from catalog.constants import MEDIA_OBJECT_FIELD_TYPES, COMPATIBLE_VERSIONS, CURRENT_VERSION
+from catalog.constants import (
+    COMPATIBLE_VERSIONS,
+    CURRENT_VERSION,
+    MEDIA_OBJECT_FIELD_TYPES,
+)
+from catalog.errors import (
+    BrokenFileError,
+    IDDuplicateError,
+    IncompatibleVersionError,
+    InvalidObjectError,
+    ObjectNotFoundError,
+)
+
 
 class DataclassJSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -10,15 +21,16 @@ class DataclassJSONEncoder(json.JSONEncoder):
             return asdict(o)
         return super().default(o)
 
+
 @dataclass
 class MediaObject:
-    id: str # Unique
+    id: str  # Unique
     category: str
     name: str
     genre: str
     author: str
-    duration: int # time in ms
-    size: int # size in bytes
+    duration: int  # time in ms
+    size: int  # size in bytes
     year: int
 
     def check(self) -> None:
@@ -27,15 +39,20 @@ class MediaObject:
             object_field_value = getattr(self, attr)
             if not isinstance(object_field_value, field_type):
                 raise InvalidObjectError(
-                    f"ERROR: Object field \"{attr}\" should have type {field_type}, not {type(object_field_value)}.\n"
+                    f'ERROR: Object field "{attr}" should have type {field_type}, not {type(object_field_value)}.\n'
                 )
             if not object_field_value:
                 raise InvalidObjectError(
-                    "ERROR: Object field \"{attr}\" should have a valid value.\n"
+                    f'ERROR: Object field "{attr}" should have a valid value.\n'
                 )
+        if self.size < 0:
+            raise InvalidObjectError(
+                'ERROR: Object size cannot be less than zero bytes.\n'
+            )
 
     def __post_init__(self) -> None:
         self.check()
+
 
 class MediaCatalog:
     __data: dict[str, MediaObject]
@@ -63,7 +80,7 @@ class MediaCatalog:
             )
         if self.__contains__(item.id):
             raise IDDuplicateError(
-                f"ERROR: Trying to insert object with existing id \"{item.id}\" in catalog.\n"
+                f'ERROR: Trying to insert object with existing id "{item.id}" in catalog.\n'
             )
         self.__data[item.id] = item
         if item.category.title() not in self.__categories:
@@ -82,7 +99,7 @@ class MediaCatalog:
             )
         if not self.__contains__(item_id):
             raise ObjectNotFoundError(
-                f"ERROR: Object with id \"{item_id}\" is not found in catalog while trying to get it.\n"
+                f'ERROR: Object with id "{item_id}" is not found in catalog while trying to get it.\n'
             )
         return self.__data[item_id]
 
@@ -93,7 +110,7 @@ class MediaCatalog:
             )
         if not self.__contains__(item_id):
             raise ObjectNotFoundError(
-                f"ERROR: Object with id \"{item_id}\" is not found in catalog while trying to remove it.\n"
+                f'ERROR: Object with id "{item_id}" is not found in catalog while trying to remove it.\n'
             )
         value: MediaObject = self.__data.pop(item_id)
         return value
@@ -121,7 +138,12 @@ class MediaCatalog:
     def dump(self, filename: str = "catalog.json") -> None:
         try:
             with open(filename, "w") as file:
-                json.dump({"version": CURRENT_VERSION, "data": self.__data}, file, indent=2, cls=DataclassJSONEncoder)
+                json.dump(
+                    {"version": CURRENT_VERSION, "data": self.__data},
+                    file,
+                    indent=2,
+                    cls=DataclassJSONEncoder,
+                )
         except OSError:
             raise BrokenFileError(
                 f"File {filename} is either not exists or you have no permission to read it or it is a directory.\n"
@@ -130,6 +152,7 @@ class MediaCatalog:
             raise BrokenFileError(
                 f"File {filename} is either broken or has wrong format.\n"
             )
+
     def load(self, filename: str = "catalog.json") -> None:
         try:
             with open(filename, "r") as file:
@@ -139,7 +162,11 @@ class MediaCatalog:
                     raise BrokenFileError(
                         f"File {filename} is either broken or has wrong format.\n"
                     )
-                if "version" not in json_data or "data" not in json_data or len(json_data) != 2:
+                if (
+                    "version" not in json_data
+                    or "data" not in json_data
+                    or len(json_data) != 2
+                ):
                     raise BrokenFileError(
                         f"File {filename} is either broken or has wrong format.\n"
                     )
@@ -153,9 +180,7 @@ class MediaCatalog:
                     try:
                         json_data["data"][id] = MediaObject(**object)
                     except (InvalidObjectError, TypeError):
-                        raise BrokenFileError(
-                            f"File {filename} is broken.\n"
-                        )
+                        raise BrokenFileError(f"File {filename} is broken.\n")
                     if object["category"] not in json_categories:
                         json_categories[object["category"]] = []
                     json_categories[object["category"]].append(id)

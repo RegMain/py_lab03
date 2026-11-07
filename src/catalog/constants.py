@@ -9,5 +9,5 @@ MEDIA_OBJECT_FIELD_TYPES = {
     "author": str,
     "duration": int,
     "size": int,
-    "year": int
+    "year": int,
 }
